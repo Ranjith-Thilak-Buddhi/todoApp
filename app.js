@@ -32,11 +32,11 @@ const verifyQueries = (request, response, next) => {
   const priorities = ["HIGH", "LOW", "MEDIUM"];
   const statuses = ["TO DO", "IN PROGRESS", "DONE"];
   const categories = ["WORK", "HOME", "LEARNING"];
-  const 
-
+  console.log(status);
+  console.log(status === "DONE");
   switch (true) {
     case priority !== undefined:
-      if (priorities.includes()) {
+      if (priorities.includes(priority)) {
         next();
       } else {
         response.status(400);
@@ -59,18 +59,29 @@ const verifyQueries = (request, response, next) => {
         response.send("Invalid Todo Category");
       }
       break;
+
     default:
+      next();
       break;
   }
 };
 
-app.get("/todos/", verifyQueries, async (request, response) => {
-  const { priority, status, category, search_q } = request.query;
-  let getTodoListQuery = ``;
+/*app.get("/todos/", async (request, response) => {
+  const getTodosQuery = `
+    SELECT
+    *
+    FROM
+    todo`;
+  const todoList = await db.all(getTodosQuery);
+  response.send(todoList);
+});*/
 
+app.get("/todos/", verifyQueries, async (request, response) => {
+  const { priority, status, category, search_q = "" } = request.query;
+  let getTodoListQuery = ``;
   switch (true) {
     case search_q !== undefined:
-      getQuery = `
+      getTodoListQuery = `
             SELECT
             id,
             todo,
@@ -81,10 +92,10 @@ app.get("/todos/", verifyQueries, async (request, response) => {
             FROM
             todo
             WHERE
-            todo LIKE %'${search_q}'%;`;
+            todo LIKE '%${search_q}%';`;
       break;
     case status !== undefined && priority !== undefined:
-      getQuery = `
+      getTodoListQuery = `
            SELECT 
            id,
             todo,
@@ -98,7 +109,7 @@ app.get("/todos/", verifyQueries, async (request, response) => {
            status = '${status}' AND priority = '${priority}';`;
       break;
     case status !== undefined && category !== undefined:
-      getQuery = `
+      getTodoListQuery = `
            SELECT 
            id,
             todo,
@@ -112,7 +123,7 @@ app.get("/todos/", verifyQueries, async (request, response) => {
            status = '${status}' AND category = '${category}';`;
       break;
     case priority !== undefined && category !== undefined:
-      getQuery = `
+      getTodoListQuery = `
            SELECT 
            id,
             todo,
@@ -128,7 +139,7 @@ app.get("/todos/", verifyQueries, async (request, response) => {
     case priority !== undefined &&
       status === undefined &&
       category === undefined:
-      getQuery = `
+      getTodoListQuery = `
             SELECT
             id,
             todo,
@@ -144,7 +155,7 @@ app.get("/todos/", verifyQueries, async (request, response) => {
     case priority === undefined &&
       status !== undefined &&
       category === undefined:
-      getQuery = `
+      getTodoListQuery = `
             SELECT
             id,
             todo,
@@ -159,7 +170,7 @@ app.get("/todos/", verifyQueries, async (request, response) => {
     case priority === undefined &&
       status === undefined &&
       category !== undefined:
-      getQuery = `
+      getTodoListQuery = `
             SELECT
             id,
             todo,
@@ -191,7 +202,7 @@ app.get("/todos/:todoId/", async (request, response) => {
   response.send(todo);
 });
 
-app.post("/todos/", async (request, response) => {
+app.post("/todos/", verifyQueries, async (request, response) => {
   const { id, todo, priority, status, category, dueDate } = request.body;
   const postTodoQuery = `
     INSERT INTO
@@ -202,7 +213,7 @@ app.post("/todos/", async (request, response) => {
   response.send("Todo Successfully Added");
 });
 
-app.get("/agenda/", async (request, response) => {
+app.get("/agenda/", verifyQueries, async (request, response) => {
   const { date } = request.query;
   const requestQuery = `
          SELECT
@@ -215,7 +226,7 @@ app.get("/agenda/", async (request, response) => {
   response.send(todosList);
 });
 
-app.put("/todos/:todoId/", async (request, response) => {
+app.put("/todos/:todoId/", verifyQueries, async (request, response) => {
   const { todoId } = request.params;
   const { priority, status, category, dueDate } = request.body;
   let updateTodoQuery = "";
@@ -277,6 +288,10 @@ app.delete("/todos/:todoId/", async (request, response) => {
     id = ${todoId};`;
   await db.run(deleteTodoQuery);
   response.send("Todo Deleted");
+});
+
+module.exports = app;
+
 });
 
 module.exports = app;
