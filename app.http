@@ -2,11 +2,7 @@ GET http://localhost:3000/todos/?status=DONE;
 ###
 
 
-GET http://localhost:3000/todos/
-###
-
-
-GET http://localhost:3000/todos/6/
+GET http://localhost:3000/todos/1/
 ###
 
 
@@ -29,10 +25,3 @@ Content-Type: application/json
 
 { "status": "DONE" }
 ###
-
-GET http://localhost:3000/agenda/?date=2021-04-04
-###
-
-
-
-DELETE http://localhost:3000/todos/5
